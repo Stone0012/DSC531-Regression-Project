@@ -13,3 +13,13 @@ proc sql;
       on Grads.UnitID eq ge.UnitID
   ;
 quit;
+
+proc sort data=gradrates out=gradrates_sorted;
+    by unitid;
+run;
+
+data gradratesb;
+    set gradrates_sorted;
+    by unitid;
+    if first.unitid;
+run;
