@@ -26,5 +26,3 @@ proc sql;
       on Grads.UnitID eq ge.UnitID
   ;
 quit;
-
-*test;
