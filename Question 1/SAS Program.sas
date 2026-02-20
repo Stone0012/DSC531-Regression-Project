@@ -9,17 +9,7 @@ proc sql;
     select Grads.UnitId, Grads.Total/ge.Total as GradRate, grads.group
     from ipeds.Graduation(where=(group = 'Completers within 150% of normal time')) as grads
             inner join
-         ipeds.graduationextended(where=(total ge 200)) as ge
+         ipeds.graduationextended(where=(group contains 'Incoming' and total ge 200)) as ge
       on Grads.UnitID eq ge.UnitID
   ;
 quit;
-
-proc sort data=gradrates out=gradrates_sorted;
-    by unitid;
-run;
-
-data gradratesb;
-    set gradrates_sorted;
-    by unitid;
-    if first.unitid;
-run;
