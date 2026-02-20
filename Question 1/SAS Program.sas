@@ -18,3 +18,5 @@ proc sql;
     where GradRates.UnitID eq Characteristics.UnitID eq tuitionandcosts.UnitID
   ;
 quit;
+
+*Hello, this is a test;
