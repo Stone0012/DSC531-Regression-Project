@@ -15,14 +15,17 @@ libname specs clear;
 
 proc sql;
   create table GradRates as 
-    select Grads.UnitId, Grads.Total/ge.Total as GradRate, grads.total, grads.men, grads.women,
-            ge.graiant as American_Indian_or_Alaska_Native, 
+    select grads.UnitId, 
+            grads.Total/ge.Total as GradRate, 
+            grads.total, 
+            grads.men, 
+            grads.women,
             ge.grasiat as Asian_Total, 
-            ge.grbkaat as Africant_American_Total, 
+            ge.grbkaat as African_American_Total, 
             ge.grhispt as Hispanic_Total, 
-            ge.grnhpit as Hawaiian_Pacific_Islander_Total, 
             ge.grwhitt as White_Toal, 
             ge.gr2mort as Multi_Race, 
+            ge.graiant + ge.grnhpit as Race_Other,
             ge.grunknt as Race_Unknown,
             c.iclevel as Level_of_institution,
             c.control,
@@ -42,3 +45,4 @@ proc sql;
             on c.unitid eq t.unitid
   ;
 quit;
+
