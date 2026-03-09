@@ -39,7 +39,7 @@ run;
   
 data GradRates2;
     set GradRates;
-    if GradRate >= 0.599 then AboveMedian = 1;
+    if GradRate >= 0.5991 then AboveMedian = 1;
     else AboveMedian = 0;
 run;
 
@@ -92,15 +92,30 @@ ods select all;
 
 /**Lasso**/
 
-ods select ModelInfo ClassLevelInfo FitStatistics ParameterEstimates OddsRatios;
-
-proc logistic data=GradRates2;
-    class control Highest_level_offered / param=ref;
+proc hpgenselect data=GradRates2;
+    class control Highest_level_offered;
     model AboveMedian(event='1') =
         men
         Asian_Total African_American_Total Hispanic_Total Multi_Race Race_Other
         control Highest_level_offered
-        In_State_Tution;
-run; 
+        In_State_Tution
+        / dist=binomial link=logit;
+    selection method=lasso(choose=AIC);
+run;
 
-ods select all;
+*Below is the code for creating the Specs-- Leave commented out, dont need to run everytime;
+
+ods noproctitle;
+Title 'GradRates';
+proc contents data=GradRates varnum;
+  ods select position;
+  ods output position=GradRatesSpecs;
+run;
+
+libname specs xlsx "~/LogRegProj/Question 2/Specs.xlsx";
+
+proc datasets;
+  copy out=Specs in=work;
+  select GradRatesSpecs;
+run;
+libname specs clear;
