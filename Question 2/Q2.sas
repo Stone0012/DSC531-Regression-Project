@@ -103,7 +103,7 @@ proc hpgenselect data=GradRates2;
     selection method=lasso(choose=AIC);
 run;
 
-*Below is the code for creating the Specs-- Leave commented out, dont need to run everytime;
+/**Below is the code for creating the Specs-- Leave commented out, dont need to run everytime;
 
 ods noproctitle;
 Title 'GradRates';
@@ -118,4 +118,4 @@ proc datasets;
   copy out=Specs in=work;
   select GradRatesSpecs;
 run;
-libname specs clear;
+libname specs clear;*/
