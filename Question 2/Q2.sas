@@ -11,14 +11,16 @@ proc sql;
             ge.grasiat as Asian_Total, 
             ge.grbkaat as African_American_Total, 
             ge.grhispt as Hispanic_Total, 
-            ge.grwhitt as White_Toal, 
+            ge.grwhitt as White_Total, 
             ge.gr2mort as Multi_Race, 
             ge.graiant + ge.grnhpit as Race_Other,
             ge.grunknt as Race_Unknown,
             c.control,
             c.hloffer as Highest_level_offered,
             t.tuition2/1000 as In_State_Tution,
-            t.tuition3/1000 as Out_State_Tution
+            t.tuition3/1000 as Out_State_Tution,
+            s.total_staff,
+            (ge.total / s.total_staff) as Student_Faculty_Ratio
 
     from ipeds.Graduation(where=(group = 'Completers within 150% of normal time')) as grads
                 inner join
@@ -30,7 +32,14 @@ proc sql;
                 inner join
         ipeds.tuitionandcosts as t
             on c.unitid eq t.unitid
-  ;
+left join (
+    select
+        put(unitid, 8.) as unitid_char,
+        sa09mct as total_staff
+    from ipeds.salaries
+    where put(rank, ARANK.) = 'All instructional staff total'
+) as s
+on s.unitid_char = put(grads.unitid, 8.);
 quit;
 
 proc means data=GradRates median;
@@ -39,7 +48,7 @@ run;
   
 data GradRates2;
     set GradRates;
-    if GradRate >= 0.5991 then AboveMedian = 1;
+    if GradRate >= 0.599 then AboveMedian = 1;
     else AboveMedian = 0;
 run;
 
@@ -50,9 +59,10 @@ proc logistic data=GradRates2;
     class control Highest_level_offered / param=ref;
     model AboveMedian(event='1') = 
         men
-        Asian_Total African_American_Total Hispanic_Total Multi_Race Race_Other
+        White_Total Asian_Total African_American_Total Hispanic_Total Multi_Race Race_Other
         control Highest_level_offered
         In_State_Tution
+        Student_Faculty_Ratio
         / selection=forward slentry=0.05;
 run;
 
@@ -65,9 +75,10 @@ proc logistic data=GradRates2;
     class control Highest_level_offered / param=ref;
     model AboveMedian(event='1') =
         men
-        Asian_Total African_American_Total Hispanic_Total Multi_Race Race_Other
+         White_Total Asian_Total African_American_Total Hispanic_Total Multi_Race Race_Other
         control Highest_level_offered
         In_State_Tution
+        Student_Faculty_Ratio
         / selection=stepwise slentry=0.05 slstay=0.05;
 run;
 
@@ -82,9 +93,10 @@ proc logistic data=GradRates2;
     class control Highest_level_offered / param=ref;
     model AboveMedian(event='1') =
         men
-        Asian_Total African_American_Total Hispanic_Total Multi_Race Race_Other
+         White_Total Asian_Total African_American_Total Hispanic_Total Multi_Race Race_Other
         control Highest_level_offered
         In_State_Tution
+        Student_Faculty_Ratio
         / selection=backward slstay=0.05;
 run;
 
@@ -96,9 +108,10 @@ proc hpgenselect data=GradRates2;
     class control Highest_level_offered;
     model AboveMedian(event='1') =
         men
-        Asian_Total African_American_Total Hispanic_Total Multi_Race Race_Other
+         White_Total Asian_Total African_American_Total Hispanic_Total Multi_Race Race_Other
         control Highest_level_offered
         In_State_Tution
+        Student_Faculty_Ratio
         / dist=binomial link=logit;
     selection method=lasso(choose=AIC);
 run;
